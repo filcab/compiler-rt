@@ -26,8 +26,8 @@ static const char *StripFunctionName(const char *function, const char *prefix) {
 static const char kDefaultFormat[] = "    #%n %p %F %L";
 
 void RenderFrame(InternalScopedString *buffer, const char *format, int frame_no,
-                 const AddressInfo &info, const char *strip_path_prefix,
-                 const char *strip_func_prefix) {
+                 const AddressInfo &info, bool vs_style,
+                 const char *strip_path_prefix, const char *strip_func_prefix) {
   if (0 == internal_strcmp(format, "DEFAULT"))
     format = kDefaultFormat;
   for (const char *p = format; *p != '\0'; p++) {
@@ -83,13 +83,13 @@ void RenderFrame(InternalScopedString *buffer, const char *format, int frame_no,
     case 'S':
       // File/line information.
       RenderSourceLocation(buffer, info.file, info.line, info.column,
-                           strip_path_prefix);
+                           strip_path_prefix, vs_style);
       break;
     case 'L':
       // Source location, or module location.
       if (info.file) {
         RenderSourceLocation(buffer, info.file, info.line, info.column,
-                             strip_path_prefix);
+                             strip_path_prefix, vs_style);
       } else if (info.module) {
         RenderModuleLocation(buffer, info.module, info.module_offset,
                              strip_path_prefix);
@@ -106,20 +106,22 @@ void RenderFrame(InternalScopedString *buffer, const char *format, int frame_no,
         buffer->append("(%p)", (void *)info.address);
       break;
     default:
-      Report("Unsupported specifier in stack frame format: %c (0x%zx)!\n",
-             *p, *p);
+      Report("Unsupported specifier in stack frame format: %c (0x%zx)!\n", *p,
+             *p);
       Die();
     }
   }
 }
 
 void RenderSourceLocation(InternalScopedString *buffer, const char *file,
-                          int line, int column, const char *strip_path_prefix) {
+                          int line, int column, const char *strip_path_prefix,
+                          bool vs_style) {
+  bool print_vs_style = vs_style && line > 0 && column > 0;
   buffer->append("%s", StripPathPrefix(file, strip_path_prefix));
   if (line > 0) {
-    buffer->append(":%d", line);
+    buffer->append(print_vs_style ? "(%d" : ":%d", line);
     if (column > 0)
-      buffer->append(":%d", column);
+      buffer->append(print_vs_style ? ",%d)" : ":%d", column);
   }
 }
 
