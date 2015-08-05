@@ -292,9 +292,10 @@ void __ubsan::__ubsan_handle_vla_bound_not_positive_abort(VLABoundData *Data,
 
 static void handleFloatCastOverflow(FloatCastOverflowData *Data,
                                     ValueHandle From, ReportOptions Opts) {
-  // TODO: Add deduplication once a SourceLocation is generated for this check.
-  SymbolizedStackHolder CallerLoc(getCallerLocation(Opts.pc));
-  Location Loc = CallerLoc;
+  SourceLocation Loc = Data->Loc.acquire();
+  if (ignoreReport(Loc, Opts))
+    return;
+
   ScopedReport R(Opts, Loc);
 
   Diag(Loc, DL_Error,

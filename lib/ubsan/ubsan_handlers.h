@@ -98,7 +98,7 @@ struct VLABoundData {
 RECOVERABLE(vla_bound_not_positive, VLABoundData *Data, ValueHandle Bound)
 
 struct FloatCastOverflowData {
-  // FIXME: SourceLocation Loc;
+  SourceLocation Loc;
   const TypeDescriptor &FromType;
   const TypeDescriptor &ToType;
 };
