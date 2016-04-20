@@ -46,9 +46,10 @@ static void handleTypeMismatchImpl(TypeMismatchData *Data, ValueHandle Pointer,
   Location Loc = Data->Loc.acquire();
 
   ErrorType ET;
+  uptr Alignment = (uptr)1 << Data->Alignment;
   if (!Pointer)
     ET = ErrorType::NullPointerUse;
-  else if (Data->Alignment && (Pointer & (Data->Alignment - 1)))
+  else if (Alignment && (Pointer & (Alignment - 1)))
     ET = ErrorType::MisalignedPointerUse;
   else
     ET = ErrorType::InsufficientObjectSize;
@@ -75,7 +76,7 @@ static void handleTypeMismatchImpl(TypeMismatchData *Data, ValueHandle Pointer,
     Diag(Loc, DL_Error, "%0 misaligned address %1 for type %3, "
                         "which requires %2 byte alignment")
         << TypeCheckKinds[Data->TypeCheckKind] << (void *)Pointer
-        << Data->Alignment << Data->Type;
+        << Alignment << Data->Type;
     break;
   case ErrorType::InsufficientObjectSize:
     Diag(Loc, DL_Error, "%0 address %1 with insufficient space "

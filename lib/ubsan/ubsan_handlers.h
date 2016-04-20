@@ -20,7 +20,7 @@ namespace __ubsan {
 struct TypeMismatchData {
   SourceLocation Loc;
   const TypeDescriptor &Type;
-  uptr Alignment;
+  unsigned char Alignment;
   unsigned char TypeCheckKind;
 };
 
